@@ -1,0 +1,41 @@
+@import "tailwindcss";
+@import "flowbite";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/600.css";
+
+/* Fuente personalizada */
+@font-face {
+  font-family: 'TASA Orbiter Display';
+  src: url('/fonts/TASAOrbiterDisplay-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+h1 {
+  font-family: 'TASA Orbiter Display', sans-serif;
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 100%;
+  color: #1C1515;
+  margin-bottom: 1.5rem; /* mb-6 */
+}
+
+h2, h3 {
+  font-family: 'TASA Orbiter Display', sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 100%;
+  color: #1C1515;
+  margin-bottom: 1.25rem; /* mb-5 */
+}
+
+p {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 100%;
+  color: #766D6D;
+  margin-bottom: 1rem; /* mb-4 */
+}

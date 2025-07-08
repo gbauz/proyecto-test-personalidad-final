@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+enum EstadoAprobacion {
+  ACEPTADA
+  RECHAZADA
+  PENDIENTE
+}
+
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model oferta {
+  id            Int           @id @default(autoincrement())
+  nombre        String
+  descripcion   String
+  sueldo        Float
+  modalidad     String
+  creadorId     Int
+  creadoEn      DateTime      @default(now())
+  creador       user          @relation("OfertasCreadas", fields: [creadorId], references: [id], onDelete: Cascade)
+  postulaciones postulacion[]
+
+  @@index([creadorId], map: "oferta_creadorId_fkey")
+}
+
+model postulacion {
+  id              Int      @id @default(autoincrement())
+  ofertaId        Int
+  postulanteId    Int
+  createdAt       DateTime @default(now()) 
+  fecha           DateTime @default(now())
+  fechaValidacion DateTime? // Nuevo campo
+  fechaAprobacion DateTime? // Nuevo campo
+   estadoAprobacion  EstadoAprobacion  @default(PENDIENTE) // ← Nuevo campo
+
+ oferta       oferta   @relation(fields: [ofertaId], references: [id], onDelete: Cascade)
+  postulante   user     @relation("PostulacionesHechas", fields: [postulanteId], references: [id], onDelete: Cascade)
+
+  @@index([ofertaId], map: "postulacion_ofertaId_fkey")
+  @@index([postulanteId], map: "postulacion_postulanteId_fkey")
+}
+
+
+model categoriadepreguntas {
+  id                    Int                     @id @default(autoincrement())
+  nombre                String
+  orden                 Int
+  tipoTestId            Int
+  isActive              Boolean                 @default(true)
+  tipotest              tipotest                @relation(fields: [tipoTestId], references: [id], map: "CategoriaDePreguntas_tipoTestId_fkey")
+  pregunta              pregunta[]
+  respuestasusuariotest respuestasusuariotest[]
+
+  @@index([tipoTestId], map: "CategoriaDePreguntas_tipoTestId_fkey")
+}
+
+model personalidades {
+  id               Int                @id @default(autoincrement())
+  nombre           String
+  keywords         String
+  descripcion      String?            @db.Text
+  isActive         Boolean            @default(true)
+  resultadosdetest resultadosdetest[]
+}
+
+model pregunta {
+  id                    Int                     @id @default(autoincrement())
+  pregunta              String
+  categoriaPreguntasId  Int
+  isActive              Boolean                 @default(true)
+  categoriadepreguntas  categoriadepreguntas    @relation(fields: [categoriaPreguntasId], references: [id], map: "Pregunta_categoriaPreguntasId_fkey")
+  respuestasusuariotest respuestasusuariotest[]
+
+  @@index([categoriaPreguntasId], map: "Pregunta_categoriaPreguntasId_fkey")
+}
+
+model respuesta {
+  id                    Int                     @id @default(autoincrement())
+  nombre                String
+  puntaje               Int
+  isActive              Boolean                 @default(true)
+  respuestasusuariotest respuestasusuariotest[]
+}
+
+model respuestasusuariotest {
+  id                   Int                  @id @default(autoincrement())
+  idUsuarioTest        Int
+  idRespuesta          Int
+  idPregunta           Int
+  idCategoria          Int
+  isActive             Boolean              @default(true)
+  categoriadepreguntas categoriadepreguntas @relation(fields: [idCategoria], references: [id], map: "RespuestasUsuarioTest_idCategoria_fkey")
+  pregunta             pregunta             @relation(fields: [idPregunta], references: [id], map: "RespuestasUsuarioTest_idPregunta_fkey")
+  respuesta            respuesta            @relation(fields: [idRespuesta], references: [id], map: "RespuestasUsuarioTest_idRespuesta_fkey")
+  usuariotest          usuariotest          @relation(fields: [idUsuarioTest], references: [id], onDelete: Cascade, map: "RespuestasUsuarioTest_idUsuarioTest_fkey")
+
+  @@index([idCategoria], map: "RespuestasUsuarioTest_idCategoria_fkey")
+  @@index([idPregunta], map: "RespuestasUsuarioTest_idPregunta_fkey")
+  @@index([idRespuesta], map: "RespuestasUsuarioTest_idRespuesta_fkey")
+  @@index([idUsuarioTest], map: "RespuestasUsuarioTest_idUsuarioTest_fkey")
+}
+
+model resultadosdetest {
+  id             Int            @id @default(autoincrement())
+  idDicotomia    Int
+  idUsuarioTest  Int            @unique
+  isActive       Boolean        @default(true)
+  createdAt      DateTime @default(now())  
+  personalidades personalidades @relation(fields: [idDicotomia], references: [id], map: "ResultadosDeTest_idDicotomia_fkey")
+  usuariotest    usuariotest    @relation("ResultadoTestUnico", fields: [idUsuarioTest], references: [id], onDelete: Cascade)
+
+  @@index([idDicotomia], map: "ResultadosDeTest_idDicotomia_fkey")
+}
+
+model role {
+  id       Int     @id @default(autoincrement())
+  name     String  @unique(map: "Role_name_key")
+  isActive Boolean @default(true)
+  user     user[]
+}
+
+model tipotest {
+  id                   Int                    @id @default(autoincrement())
+  nombre               String
+  isActive             Boolean                @default(true)
+  categoriadepreguntas categoriadepreguntas[]
+  usuariotest          usuariotest[]
+}
+
+model user {
+  id            Int           @id @default(autoincrement())
+  email         String        @unique(map: "User_email_key")
+  password      String
+  name          String
+  roleId        Int
+  createdAt     DateTime      @default(now())
+  isActive      Boolean       @default(true)
+  ofertas       oferta[]      @relation("OfertasCreadas")
+  postulaciones postulacion[] @relation("PostulacionesHechas")
+  role          role          @relation(fields: [roleId], references: [id], map: "User_roleId_fkey")
+  usuariotest   usuariotest[]
+  perfil        perfil?       @relation("PerfilUser")
+   resetToken     String?   @db.VarChar(255)
+  resetTokenExp  DateTime?
+
+  @@index([roleId], map: "User_roleId_fkey")
+}
+
+model usuariotest {
+  id                    Int                     @id @default(autoincrement())
+  idUsuario             Int
+  tipoTestId            Int
+  codigo                String
+  createdAt      DateTime @default(now()) 
+  isActive              Boolean                 @default(true)
+  testCompleted         Boolean                 @default(false)  
+  respuestasusuariotest respuestasusuariotest[]
+  resultadoTest         resultadosdetest?       @relation("ResultadoTestUnico")
+
+  user                  user                    @relation(fields: [idUsuario], references: [id], onDelete: Cascade, map: "UsuarioTest_idUsuario_fkey")
+  tipotest              tipotest                @relation(fields: [tipoTestId], references: [id], map: "UsuarioTest_tipoTestId_fkey")
+
+  @@index([idUsuario], map: "UsuarioTest_idUsuario_fkey")
+  @@index([tipoTestId], map: "UsuarioTest_tipoTestId_fkey")
+}
+
+model perfil {
+  id         Int    @id @default(autoincrement())
+  userId     Int    @unique
+  cedula     String
+  sexo       String
+  pais       String
+  ciudad     String
+    createdAt      DateTime @default(now()) 
+  fotoPerfil String
+  curriculum String
+
+  user       user   @relation(fields: [userId], references: [id], name: "PerfilUser", onDelete: Cascade)
+
+  @@index([userId])
+}

@@ -1,0 +1,26 @@
+-- This is an empty migration.
+INSERT INTO Pregunta (pregunta, categoriaPreguntasId) VALUES 
+    ("Generalmente soy más firme que amable con las personas.", 3),
+    ("Me siento más cómodo haciendo juicios críticos.", 3),
+    ("Me considero más amable que firme.", 3),
+    ("Al tomar decisiones, me baso más en información que en deseos.", 3),
+    ("Me atrae más un modo de pensar coherente que las relaciones armoniosas.", 3),
+    ("Cuando debo decepcionar a alguien, soy franco y directo.", 3),
+    ("En una discusión acalorada, no cedo en mis ideas fácilmente", 3),
+    ("Creo que es mejor ser justo que misericordioso.", 3),
+    ("Me es más natural señalar errores que complacer a otros.", 3),
+    ("Con mayor frecuencia me considero una persona juiciosa.", 3),
+    ("Me parece un cumplido que digan: 'Ahí va una persona lógica'", 3),
+    ("Mis pensamientos suelen regir mis decisiones más que mis sentimientos.", 3),
+    ("El desorden en mi lugar de trabajo es algo que normalmente arreglo con tiempo.", 4),
+    ("Tomo decisiones rápidamente.", 4),
+    ("Prefiero que los contratos se firmen formalmente.", 4),
+    ("Me siento más satisfecho con un producto terminado que con uno en proceso.", 4),
+    ("Prefiero que mis actividades estén programadas.", 4),
+    ("Prefiero declaraciones finales e invariables.", 4),
+    ("Me siento más cómodo después de haber tomado una decisión.", 4),
+    ("Soy propenso a definir las cosas claramente en lugar de dejar opciones abiertas", 4),
+    ("En la mayoría de las situaciones, soy más deliberado que espontáneo.", 4),
+    ("Me gusta dejar todo bien terminado y resuelto después de un trabajo.", 4),
+    ("fiero trabajar con plazos límite establecidos.", 4)
+    ;
