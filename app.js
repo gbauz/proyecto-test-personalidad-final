@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import cors from 'cors';
 import router from './my-page/backend/routes/index.js';
-
+import uploadRouter from './my-page/backend/routes/upload.js'; // importa la nueva ruta
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,6 +26,7 @@ uploadDirs.forEach(dir => {
 app.use(express.json());
 app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api', uploadRouter); 
 
 // ✅ Monta todas las rutas desde index.js bajo /api
 app.use('/api', router);

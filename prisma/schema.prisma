@@ -14,18 +14,21 @@ datasource db {
 }
 
 model oferta {
-  id            Int           @id @default(autoincrement())
-  nombre        String
-  descripcion   String
-  sueldo        Float
-  modalidad     String
-  creadorId     Int
-  creadoEn      DateTime      @default(now())
-  creador       user          @relation("OfertasCreadas", fields: [creadorId], references: [id], onDelete: Cascade)
-  postulaciones postulacion[]
+  id             Int            @id @default(autoincrement())
+  nombre         String
+  descripcion    String
+  sueldo         Float
+  modalidad      String
+  creadorId      Int
+  creadoEn       DateTime       @default(now())
+  creador        user           @relation("OfertasCreadas", fields: [creadorId], references: [id], onDelete: Cascade)
+  postulaciones  postulacion[]
+
+  usuariosTest   usuariotest[]  @relation("OfertaUsuariosTest")
 
   @@index([creadorId], map: "oferta_creadorId_fkey")
 }
+
 
 model postulacion {
   id              Int      @id @default(autoincrement())
@@ -63,6 +66,7 @@ model personalidades {
   nombre           String
   keywords         String
   descripcion      String?            @db.Text
+  puestosRecomendados Json?     // almacena un array JSON con los puestos
   isActive         Boolean            @default(true)
   resultadosdetest resultadosdetest[]
 }
@@ -155,18 +159,25 @@ model usuariotest {
   idUsuario             Int
   tipoTestId            Int
   codigo                String
-  createdAt      DateTime @default(now()) 
+  createdAt             DateTime                @default(now()) 
   isActive              Boolean                 @default(true)
-  testCompleted         Boolean                 @default(false)  
+  testCompleted         Boolean                 @default(false)
+
   respuestasusuariotest respuestasusuariotest[]
-  resultadoTest         resultadosdetest?       @relation("ResultadoTestUnico")
+
+  resultadoTest         resultadosdetest?       @relation("ResultadoTestUnico") // 👈 solo esto
 
   user                  user                    @relation(fields: [idUsuario], references: [id], onDelete: Cascade, map: "UsuarioTest_idUsuario_fkey")
   tipotest              tipotest                @relation(fields: [tipoTestId], references: [id], map: "UsuarioTest_tipoTestId_fkey")
 
+  ofertaId              Int?
+  oferta                oferta?                 @relation("OfertaUsuariosTest", fields: [ofertaId], references: [id])
+
   @@index([idUsuario], map: "UsuarioTest_idUsuario_fkey")
   @@index([tipoTestId], map: "UsuarioTest_tipoTestId_fkey")
 }
+
+
 
 model perfil {
   id         Int    @id @default(autoincrement())

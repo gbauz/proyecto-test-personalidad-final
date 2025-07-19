@@ -59,21 +59,13 @@ export class PerfilController {
       const dataToUpdate = { cedula, sexo, pais, ciudad };
 
       // Procesar archivos
-      if (req.files && req.files.length > 0) {
-        for (const file of req.files) {
-          if (file.fieldname === "fotoPerfil") {
-            const newFotoPath = path.join("uploads", "fotos", file.originalname);
-            await fs.rename(file.path, newFotoPath);
-            dataToUpdate.fotoPerfil = newFotoPath;
-          }
+    if (fields.fotoPerfil) {
+  dataToUpdate.fotoPerfil = fields.fotoPerfil;
+}
 
-          if (file.fieldname === "curriculum") {
-            const newCvPath = path.join("uploads", "cv", file.originalname);
-            await fs.rename(file.path, newCvPath);
-            dataToUpdate.curriculum = newCvPath;
-          }
-        }
-      }
+if (fields.curriculum) {
+  dataToUpdate.curriculum = fields.curriculum;
+}
 
       // Actualizar o crear perfil
       let perfil;
@@ -107,4 +99,47 @@ export class PerfilController {
       res.status(500).json(apiResponse(false, "Error al actualizar perfil"));
     }
   }
+
+    // Debe ir dentro de la clase PerfilController
+static async updatePerfilFromUpload(req, res) {
+  try {
+    if (!req.body || typeof req.body !== "object") {
+      return res.status(400).json({ message: "No se recibió body en la solicitud" });
+    }
+
+    console.log("📥 req.body en updatePerfilFromUpload:", req.body);
+    console.log("📂 req.files en updatePerfilFromUpload:", req.files);
+    console.log("📄 req.file:", req.file);
+
+    const { userId, tipoArchivo } = req.body;
+
+    if (!userId || !tipoArchivo) {
+      return res.status(400).json({ message: "Faltan datos requeridos: userId o tipoArchivo" });
+    }
+
+    let filePath = "";
+
+    // ✅ Ambos usan Cloudinary, ambos tienen secure_url
+    if (req.file && req.file.secure_url) {
+      filePath = req.file.secure_url;
+    } else {
+      return res.status(400).json({ message: "Archivo no válido o faltante" });
+    }
+
+    const updateData =
+      tipoArchivo === "cv" ? { curriculum: filePath } : { fotoPerfil: filePath };
+
+    const perfil = await prisma.perfil.update({
+      where: { userId: Number(userId) },
+      data: updateData,
+    });
+
+    return res.json({ message: "Archivo subido y perfil actualizado", perfil });
+  } catch (error) {
+    console.error("❌ Error en updatePerfilFromUpload:", error);
+    res.status(500).json({ message: "Error al subir archivo" });
+  }
+}
+
+
 }

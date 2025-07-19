@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import cors from 'cors';
 import router from './my-page/backend/routes/index.js'; // ⬅ este es tu index.js con /auth y /test
+import uploadRouter from './my-page/backend/routes/upload.js'; 
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -32,6 +33,7 @@ app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ✅ Monta todas las rutas desde tu index.js bajo /api
+app.use('/api', uploadRouter); 
 app.use('/api', router);
 
 const PORT = process.env.PORT || 3001;

@@ -252,4 +252,156 @@ static async aprobarSolicitud(req, res) {
   }
 }
 
+static async obtenerOfertaAplicadaPorUsuario(req, res) {
+  const userIdParam = req.params.id;
+  const userId = userIdParam ? Number(userIdParam) : null;
+
+  try {
+    if (userId) {
+      // Caso 1: obtener la oferta de un usuario específico
+      const postulacion = await prisma.postulacion.findFirst({
+        where: { postulanteId: userId },
+        include: {
+          oferta: {
+            select: {
+              id: true,
+              nombre: true,
+              descripcion: true,
+              sueldo: true,
+              modalidad: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (!postulacion || !postulacion.oferta) {
+        return res.json(apiResponse(true, 'No se encontró ninguna oferta aplicada para el usuario', null));
+      }
+
+      return res.json(apiResponse(true, 'Oferta aplicada obtenida', postulacion.oferta));
+    } else {
+      // Caso 2: obtener la última oferta aplicada por todos los usuarios
+      const usuarios = await prisma.user.findMany({
+        include: {
+          postulaciones: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            include: {
+              oferta: {
+                select: {
+                  id: true,
+                  nombre: true,
+                  descripcion: true,
+                  sueldo: true,
+                  modalidad: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Mapeamos para extraer usuario + oferta
+      const resultados = usuarios.map((user) => ({
+        id: user.id,
+        nombre: user.name,
+        email: user.email,
+        oferta: user.postulaciones?.[0]?.oferta || null,
+      }));
+
+      return res.json(apiResponse(true, 'Ofertas aplicadas por todos los usuarios', resultados));
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json(apiResponse(false, 'Error al obtener la(s) oferta(s) aplicada(s)'));
+  }
+}
+
+static async obtenerEstadoAprobacion(req, res) {
+  const postulanteId = Number(req.params.id);
+
+  try {
+    const postulacion = await prisma.postulacion.findFirst({
+      where: { postulanteId },
+      orderBy: { createdAt: 'desc' }, // opcional, si hay varias
+      select: {
+        id: true,
+        estadoAprobacion: true,
+        fechaAprobacion: true,
+      },
+    });
+
+    if (!postulacion) {
+      return res.status(404).json({
+        success: false,
+        message: 'No se encontró ninguna postulación para este usuario',
+      });
+    }
+
+    res.json({
+      success: true,
+      data: postulacion,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener estado de aprobación',
+    });
+  }
+}
+
+static async eliminarOferta(req, res) {
+  const id = Number(req.params.id);
+
+  try {
+    const ofertaEliminada = await prisma.oferta.delete({
+      where: { id },
+    });
+
+    res.json({
+      success: true,
+      message: 'Oferta eliminada correctamente',
+      data: ofertaEliminada,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al eliminar la oferta',
+    });
+  }
+}
+
+static async actualizarOferta(req, res) {
+  const id = Number(req.params.id);
+  const { nombre, descripcion, sueldo, modalidad } = req.body;
+
+  try {
+    const ofertaActualizada = await prisma.oferta.update({
+      where: { id },
+      data: {
+        nombre,
+        descripcion,
+        sueldo,
+        modalidad,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'Oferta actualizada correctamente',
+      data: ofertaActualizada,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar la oferta',
+    });
+  }
+}
+
+
 }

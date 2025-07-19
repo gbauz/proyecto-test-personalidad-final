@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { login, register, getRoles, forgotPassword, contraseña, usuarios } from '../controllers/AuthController.js';
+import { login, register, getRoles, forgotPassword, contraseña, usuarios, } from '../controllers/AuthController.js';
 import { UserController } from '../controllers/UserController.js';
 import {  OfertaController } from '../controllers/OfertaController.js';
 import { PerfilController } from '../controllers/PerfilController.js';
@@ -27,7 +27,10 @@ router.get('/verofertas', OfertaController.obtenerOfertasParaPostulantes);
 router.get('/fechas-con-usuario/:userId', OfertaController.getFechasConUsuario);
 router.put('/postulacion/validar/:id', OfertaController.validarDocumento);
 router.put('/postulacion/aprobar/:id', OfertaController.aprobarSolicitud);
-
+router.get('/postulaciones/usuario/:id?', OfertaController.obtenerOfertaAplicadaPorUsuario);
+router.get('/postulacion/estado/:id', OfertaController.obtenerEstadoAprobacion);
+router.delete('/ofertas/:id', OfertaController.eliminarOferta);
+router.put('/ofertas/:id', OfertaController.actualizarOferta);
 
 
 

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 // import { getTestPersonality } from '../controllers/TestController.js';
-import { getTestPersonality, getRespuestasActivas, iniciarTest, verificarTest, guardarRespuestas, obtenerUsuariosConTest, eliminarTestNoCompletado, postRespuestas, obtenerTestsCompletados, getDashboardResumen, verificarTestCompletado} from '../controllers/TestController.js';
-import { verificarTestPendiente } from '../controllers/AuthController.js';
+import { getTestPersonality, getRespuestasActivas, iniciarTest, verificarTest, guardarRespuestas, obtenerUsuariosConTest, eliminarTestNoCompletado, postRespuestas, obtenerTestsCompletados, getDashboardResumen, verificarTestCompletado, pdf} from '../controllers/TestController.js';
+import { obtenerPuestosRecomendados, verificarTestPendiente } from '../controllers/AuthController.js';
 
 const testRoutes = Router();
 
@@ -17,6 +17,10 @@ testRoutes.get('/resumenDashboard', getDashboardResumen)
 testRoutes.get('/usuarios-con-test', obtenerUsuariosConTest);
 testRoutes.get('/verificar-test-completado/:idUsuario', verificarTestCompletado);
 testRoutes.get('/verificar-pendiente/:idUsuario', verificarTestPendiente);
+testRoutes.get('/puestos/:id',obtenerPuestosRecomendados);
+testRoutes.get('/generar-pdf/:idUsuarioTest',pdf)
+
+
 
 
 

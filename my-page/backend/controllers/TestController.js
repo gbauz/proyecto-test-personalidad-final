@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import PDFDocument from 'pdfkit';
+
 
 
 const prisma = new PrismaClient();
@@ -564,3 +566,99 @@ export const verificarTestCompletado = async (req, res) => {
     return res.status(500).json(apiResponse(false, 'Error del servidor'));
   }
 };
+
+export const pdf = async (req, res) => {
+  const idUsuarioTest = parseInt(req.params.idUsuarioTest);
+
+  try {
+    const respuestas = await prisma.resultadosdetest.findMany({
+      where: { idUsuarioTest },
+      select: {
+        idDicotomia: true,
+        isActive: true,
+      },
+    });
+
+    const usuarioTest = await prisma.usuariotest.findUnique({
+      where: { id: idUsuarioTest },
+      include: {
+        user: true,
+        tipotest: true,
+        respuestasusuariotest: true,
+        resultadoTest: {
+          include: {
+            personalidades: true,
+          },
+        },
+      },
+    });
+
+    if (!usuarioTest) {
+      return res.status(404).json({ error: 'Usuario Test no encontrado' });
+    }
+
+    // 🔍 Buscar la oferta postulada desde la tabla Postulacion
+    const postulacion = await prisma.postulacion.findFirst({
+      where: { postulanteId: usuarioTest.user.id },
+      include: {
+        oferta: true,
+      },
+      orderBy: {
+        createdAt: 'desc', // si hay varias, tomamos la más reciente
+      },
+    });
+
+    const ofertaNombre = postulacion?.oferta?.nombre || 'N/A';
+
+    // Crear el PDF
+    const doc = new PDFDocument();
+    res.setHeader('Content-Disposition', 'attachment; filename="reporte.pdf"');
+    res.setHeader('Content-Type', 'application/pdf');
+    doc.pipe(res);
+
+    doc.on('error', (err) => {
+      console.error('Error en PDF:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Error al generar el PDF' });
+      }
+    });
+
+    const personalidad = usuarioTest.resultadoTest?.personalidades;
+
+    doc.fontSize(18).text(`Personalidad: ${personalidad?.nombre || 'N/A'}`);
+    doc.moveDown();
+    doc.fontSize(12).text(`Descripción: ${personalidad?.descripcion || 'N/A'}`);
+    doc.moveDown();
+    doc.fontSize(12).text(`Usuario: ${usuarioTest.user?.name || 'N/A'}`);
+    doc.text(`Correo: ${usuarioTest.user?.email || 'N/A'}`);
+
+    let puestosRecomendados = 'N/A';
+    try {
+      const puestosJson = personalidad?.puestosRecomendados;
+      if (puestosJson && Array.isArray(puestosJson)) {
+        puestosRecomendados = puestosJson.join(', ');
+      }
+    } catch (e) {
+      console.error('Error leyendo puestosRecomendados:', e);
+    }
+
+    doc.text(`Puestos recomendados: ${puestosRecomendados}`);
+    doc.text(`Oferta postulada: ${ofertaNombre}`);
+    doc.text(`Fecha: ${new Date(usuarioTest.createdAt).toLocaleDateString('es-CO')}`);
+
+    if (respuestas.length > 0) {
+      doc.addPage().fontSize(16).text('Resultados por Dicotomía:', { underline: true });
+      respuestas.forEach((res, idx) => {
+        doc.fontSize(12).text(`#${idx + 1} → ID Dicotomía: ${res.idDicotomia} | Valor: ${res.isActive}`);
+      });
+    }
+
+    doc.end();
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+};
+
