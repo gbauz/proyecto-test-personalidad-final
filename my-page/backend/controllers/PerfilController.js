@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import path from "path";
-import fs from "fs/promises";
+
 
 const prisma = new PrismaClient();
 const apiResponse = (isSuccess, message, data = null) => ({ isSuccess, message, data });

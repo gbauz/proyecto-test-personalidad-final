@@ -4,7 +4,7 @@ import multer from 'multer';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import cloudinary from '../utils/cloudinary.js';
-import { PerfilController } from '../controllers/perfilController.js';
+import { PerfilController } from '../controllers/PerfilController.js';
 
 
 const router = express.Router();
