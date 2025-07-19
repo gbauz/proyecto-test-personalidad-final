@@ -187,7 +187,7 @@ export const forgotPassword = async (req, res) => {
       },
     });
 
-    const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+    const resetLink = `https://proyecto-test-personalidad-frontend.vercel.app/reset-password?token=${token}`;
 
     const html = `
       <h3>Recuperación de contraseña</h3>
