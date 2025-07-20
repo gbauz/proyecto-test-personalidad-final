@@ -63,7 +63,7 @@ router.post('/auth/upload-pdf', upload.single('file'), async (req, res) => {
     const result = await cloudinary.uploader.upload(filePath, {
       folder: tipoArchivo === 'fotoPerfil' ? 'fotos' : 'cv',
       public_id: uuidv4(),
-      resource_type: 'auto',
+      resource_type: 'raw',
     });
 
     fs.unlinkSync(filePath);
