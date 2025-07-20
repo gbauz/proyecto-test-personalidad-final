@@ -1,8 +1,8 @@
 import nodemailer from 'nodemailer';
 
 // ⚠️ Reemplaza con tu correo real y contraseña de app (NO la contraseña normal de Gmail)
-const EMAIL_FROM = 'zcamilozcastillo@gmail.com';
-const EMAIL_PASS = 'yind scnm mvkm tbkv';
+const EMAIL_FROM = 'digitalwebdise@gmail.com';
+const EMAIL_PASS = 'gahv wykz prnm zlvq';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
