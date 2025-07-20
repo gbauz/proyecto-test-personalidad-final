@@ -104,42 +104,82 @@ if (fields.curriculum) {
 static async updatePerfilFromUpload(req, res) {
   try {
     if (!req.body || typeof req.body !== "object") {
+      console.log("⚠️ No se recibió body válido");
       return res.status(400).json({ message: "No se recibió body en la solicitud" });
     }
 
-    console.log("📥 req.body en updatePerfilFromUpload:", req.body);
-    console.log("📂 req.files en updatePerfilFromUpload:", req.files);
+    console.log("📥 req.body:", req.body);
+    console.log("📂 req.files:", req.files);
     console.log("📄 req.file:", req.file);
 
     const { userId, tipoArchivo } = req.body;
 
     if (!userId || !tipoArchivo) {
+      console.log("❌ Faltan datos requeridos: userId o tipoArchivo");
       return res.status(400).json({ message: "Faltan datos requeridos: userId o tipoArchivo" });
     }
 
     let filePath = "";
 
-    // ✅ Ambos usan Cloudinary, ambos tienen secure_url
     if (req.file && req.file.secure_url) {
       filePath = req.file.secure_url;
+      console.log(`✅ Archivo recibido y subido a Cloudinary. URL: ${filePath}`);
     } else {
+      console.log("❌ Archivo no válido o faltante");
       return res.status(400).json({ message: "Archivo no válido o faltante" });
     }
 
-    const updateData =
-      tipoArchivo === "cv" ? { curriculum: filePath } : { fotoPerfil: filePath };
+    const updateData = {};
 
-    const perfil = await prisma.perfil.update({
+    if (tipoArchivo === "cv") {
+      updateData.curriculum = filePath;
+    } else if (tipoArchivo === "fotoPerfil") {
+      updateData.fotoPerfil = filePath;
+    } else {
+      return res.status(400).json({ message: "Tipo de archivo no válido" });
+    }
+
+    const existingPerfil = await prisma.perfil.findUnique({
       where: { userId: Number(userId) },
-      data: updateData,
     });
+
+    let perfil;
+
+    if (existingPerfil) {
+      console.log("ℹ️ Perfil existente encontrado. Procediendo a actualizar...");
+      perfil = await prisma.perfil.update({
+        where: { userId: Number(userId) },
+        data: updateData,
+      });
+      console.log("✅ Perfil actualizado correctamente.");
+    } else {
+      console.log("ℹ️ No se encontró perfil. Se intentará crear uno nuevo...");
+
+      // Crear solo el campo correspondiente
+      perfil = await prisma.perfil.create({
+        data: {
+          userId: Number(userId),
+          cedula: "",
+          sexo: "",
+          pais: "",
+          ciudad: "",
+          curriculum: tipoArchivo === "cv" ? filePath : "",
+          fotoPerfil: tipoArchivo === "fotoPerfil" ? filePath : "",
+        },
+      });
+
+      console.log("✅ Perfil creado exitosamente.");
+    }
 
     return res.json({ message: "Archivo subido y perfil actualizado", perfil });
   } catch (error) {
     console.error("❌ Error en updatePerfilFromUpload:", error);
-    res.status(500).json({ message: "Error al subir archivo" });
+    return res.status(500).json({ message: "Error al subir archivo", error: error.message });
   }
 }
+
+
+
 
 
 }

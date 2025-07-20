@@ -180,17 +180,17 @@ model usuariotest {
 
 
 model perfil {
-  id         Int    @id @default(autoincrement())
-  userId     Int    @unique
-  cedula     String
-  sexo       String
-  pais       String
-  ciudad     String
-    createdAt      DateTime @default(now()) 
-  fotoPerfil String
-  curriculum String
+  id         Int      @id @default(autoincrement())
+  userId     Int      @unique
+  cedula     String?  // <- opcional
+  sexo       String?  // <- opcional
+  pais       String?  // <- opcional
+  ciudad     String?  // <- opcional
+  createdAt  DateTime @default(now())
+  fotoPerfil String?
+  curriculum String?
 
-  user       user   @relation(fields: [userId], references: [id], name: "PerfilUser", onDelete: Cascade)
+  user       user     @relation(fields: [userId], references: [id], name: "PerfilUser", onDelete: Cascade)
 
   @@index([userId])
 }

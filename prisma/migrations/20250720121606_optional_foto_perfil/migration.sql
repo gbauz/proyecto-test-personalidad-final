@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `perfil` MODIFY `cedula` VARCHAR(191) NULL,
+    MODIFY `sexo` VARCHAR(191) NULL,
+    MODIFY `pais` VARCHAR(191) NULL,
+    MODIFY `ciudad` VARCHAR(191) NULL;
