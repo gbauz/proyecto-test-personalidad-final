@@ -10,7 +10,7 @@ import { PerfilController } from '../controllers/PerfilController.js';
 const router = express.Router();
 const upload = multer({ dest: 'temp/' });
 
-router.post('/upload-cv', upload.single('file'), async (req, res) => {
+router.post('/auth/upload-cv', upload.single('file'), async (req, res) => {
   try {
     console.log('🧾 req.body:', req.body);
     console.log('📂 req.file:', req.file);
